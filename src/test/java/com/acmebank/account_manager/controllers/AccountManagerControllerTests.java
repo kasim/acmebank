@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import org.hibernate.exception.LockAcquisitionException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,18 +53,21 @@ public class AccountManagerControllerTests {
     static final long savingAccountId = 88888888L;
     static final long invalidAccountId = 123456789L;
     static final long insufficientFundAccountId = 11111111L;
+    static final long lockAccountId = 99999999L;
     static final BigDecimal balance = BigDecimal.valueOf(1000000);
     static final AccountBalance currentAccountBalance = AccountBalance.of(balance, HKD, CURRENT);
     final AccountManagerException invalidAccountManagerException = new AccountManagerException(ACCOUNT_NOT_FOUND, List.of(Long.toString(invalidAccountId)));
     static final ErrorResponse invalidAccountErrorResponse = new com.acmebank.account_manager.data.models.responses.ErrorResponse(ACCOUNT_NOT_FOUND, new String[]{Long.toString(invalidAccountId)});
     static final ErrorResponse insufficientFundErrorResponse = new com.acmebank.account_manager.data.models.responses.ErrorResponse(INSUFFICIENT_FUND, new String[]{Long.toString(insufficientFundAccountId)});
     static final ErrorResponse sameAccountErrorResponse = new com.acmebank.account_manager.data.models.responses.ErrorResponse(SAME_ACCOUNT, new String[]{});
+    static final ErrorResponse lockAccountErrorResponse = new com.acmebank.account_manager.data.models.responses.ErrorResponse(GENERAL_ERROR, new String[]{});
     private final ObjectMapper mapper;
 
     static Stream<Arguments> getAccountBalanceParamsProvider() {
         return Stream.of(
                 Arguments.of(currentAccountId, OK, currentAccountBalance),
-                Arguments.of(invalidAccountId, BAD_REQUEST, invalidAccountErrorResponse)
+                Arguments.of(invalidAccountId, BAD_REQUEST, invalidAccountErrorResponse),
+                Arguments.of(lockAccountId, BAD_REQUEST, lockAccountErrorResponse)
         );
     }
 
@@ -74,6 +79,8 @@ public class AccountManagerControllerTests {
                 .thenReturn(ResponseEntity.ok(currentAccountBalance));
         doThrow(invalidAccountManagerException)
                 .when(accountManager).getAccountBalance(invalidAccountId);
+        doThrow(new LockAcquisitionException("Account Locked!", new SQLException()))
+                .when(accountManager).getAccountBalance(lockAccountId);
         mockMvc.perform(get(GET_ACCOUNT, accountId))
                 .andExpect(status().is(httpStatus.value()))
                 .andExpect(content().json(mapper.writeValueAsString(responseObject)));
