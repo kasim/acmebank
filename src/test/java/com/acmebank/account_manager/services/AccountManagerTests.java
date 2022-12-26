@@ -9,7 +9,9 @@ import com.acmebank.account_manager.exceptions.AccountManagerException;
 import com.acmebank.account_manager.shared.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.hibernate.exception.LockAcquisitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
+@Slf4j
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AccountManagerTests {
@@ -129,6 +132,8 @@ public class AccountManagerTests {
             executorService.execute(() -> {
                 try {
                     accountManager.transfer(currentToSavingRequest);
+                } catch (LockAcquisitionException lae) {
+                    log.error("Encountered LockAcquisitionException {}, it seems there is concurrency occurred in database.", lae);
                 } finally {
                     latch.countDown();
                 }
