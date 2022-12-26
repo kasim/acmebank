@@ -1,0 +1,2 @@
+INSERT INTO "account" ("id", "balance", "currency", "type", "created_at", "updated_at") VALUES (12345678, 1000000, 0, 0, now(), now());
+INSERT INTO "account" ("id", "balance", "currency", "type", "created_at", "updated_at") VALUES (88888888, 1000000, 0, 1, now(), now());

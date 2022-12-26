@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./acmebank
+    username: root
+    password: pa$$w0rd
+    driverClassName: org.h2.Driver
+  jpa:
+    defer-datasource-initialization: true
+    hibernate.ddl-auto: update
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    properties.hibernate.globally_quoted_identifiers: true
+  h2:
+    console.enabled: true
+  sql:
+    init.mode: always # - always, if database initialized at first time; - never, if database exists
