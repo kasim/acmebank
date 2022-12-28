@@ -39,3 +39,5 @@ Or
   2. After database established, I need to think about the entity model of required which helps to build all the building blocks I need in this project.
   3. I chose to use Spring Data with H2 which simplify this implementation after I defined all the entities.
 * Cannot use `account-manager` in package name, I used `account_manager` instead.
+* If you want to keep the data in H2 database, please set spring.sql.init.mode=never before second startup;
+If not, please delete acmebank.mv.db after the startup.
