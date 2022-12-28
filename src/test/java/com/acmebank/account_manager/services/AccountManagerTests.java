@@ -125,8 +125,8 @@ public class AccountManagerTests {
     void givenAccountService_whenTransferRunsConcurrently_thenExpectedTotalAmountInBothAccountsSameAndRequiredEntitiesLocked() {
         val amount = BigDecimal.valueOf(100);
         val currentToSavingRequest = new TransferRequest(currentAccount.getId(), savingAccount.getId(), amount, HKD.name());
-        val numberOfThreads = 10;
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        val numberOfThreads = 2;
+        ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
         for (int i = numberOfThreads; i > 0; i--) {
             executorService.execute(() -> {
